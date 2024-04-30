@@ -108,3 +108,55 @@ data = [
     [random.randint(0, 10000) for _ in range(num_entities)],  # some random integer
     [[random.random() for _ in range(2)] for _ in range(num_entities)]  # song_vec - 2d vector
 ]
+
+# we can remove entries based on collection schema
+expr = 'song_id in [0,20]'
+collection.delete(expr)
+
+
+######################################################## INDEXING #####################################################################D
+##########################################################################################################################################
+
+# Prepare the index parameters as follows:
+# see also https://milvus.io/docs/v2.3.x/build_index.md
+# for all the parameter types and definitions for
+# example L2 is for euclidean distance but there are others
+# once indexed a single value x becomes the vector [x1,...,xn]
+# for every value in that column
+index_params = {
+  "metric_type":"L2",
+  "index_type":"IVF_FLAT",
+  "params":{"nlist":1024}
+}
+
+collection.create_index(
+  field_name="song_id", 
+  index_params=index_params
+)
+
+
+
+
+######################################################### SEARCHING AND QUERY #############################################################
+##########################################################################################################################################
+
+# before we can search we must first connect to milvus and load the 
+# collection
+collection.load(replica_number =1)
+
+
+# the magic happens here
+# we have input data in vector form. This search will use the field song vector
+# to look for similarity based on indexing parameters in the param 
+# and then look up the song names that corresponds
+results = collection.search(
+    data = [[0.1,0.2]],
+    anns_field = "song_vec",
+    param = { "metric_type": "L2", "params": {"search_k" :64} },
+    limit = 5,
+    expr = None,
+    output_fields = ['song_name']
+)
+
+for result in results[0]:
+    print (result)
