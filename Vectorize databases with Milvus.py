@@ -129,6 +129,10 @@ index_params = {
   "params":{"nlist":1024}
 }
 
+# This is not only compares the vectors of data according
+# to index_params but orders the data by field_name
+# The more unique the values the better, picking a boolean
+# column to index by would take longer
 collection.create_index(
   field_name="song_id", 
   index_params=index_params
@@ -141,8 +145,11 @@ collection.create_index(
 ##########################################################################################################################################
 
 # before we can search we must first connect to milvus and load the 
-# collection
+# collections. we can also remove collections from memory 
+collection.release()
 collection.load(replica_number =1)
+
+
 
 
 # the magic happens here
@@ -160,3 +167,132 @@ results = collection.search(
 
 for result in results[0]:
     print (result)
+
+
+# To Query for exact matches that we know exist we do the following
+
+query_res = collection.query(
+    expr = "song_id in [1,2]",
+    limit = 10,
+    output_field = ["song_name", "listen_count"]
+)
+
+for result in query_res:
+    print (result)
+
+
+######################################################### RBAC #############################################################
+##########################################################################################################################################
+# RBAC or rolebased access allows us to assign privilages to roles and to asssign roles to users
+# to set this up we need to open the milvus config file called milvus.YAML
+# wget https://raw.githubusercontent.com/milvus-io/milvus/v2.4.0/configs/milvus.yaml
+# set   AuthorizedEnabled = TRUE this is around line 434
+# around line 40 you should add this config file as a mountable volume
+############################################# milvus.YAML file ###############################################################
+# 40 standalone:
+# 41   container_name: milvus-standalone
+# 42   image: milvusdb/milvus:v2.2.8
+# 43   command: minio server / minio_data
+# 44      volumes:
+# 45        - $DOCKER_VOLUME_DIRECTORY:-.}/volumes/milvus:/var/lib/milvus
+# 45        - $DOCKER_VOLUME_DIRECTORY:-.}/milvus.yaml:milvus/configs/milvus.yml adding this config file arund line 40
+#
+#
+# 434 AuthorizedEnabled = TRUE
+#################################################################################################################################
+# restart the container
+
+
+
+# reconnect to milvus but this time with login credentials
+from pymilvus import connections, utility, Collection 
+connections.connect(
+    alias = "default ",
+    host = 'locahost',
+    port = '19538'
+      user = 'root'  # <---------
+      password= 'Milvus' # <-----
+)
+
+
+###### CREATING ROLES --> ############################################# 
+####################################################################### 
+# list roles
+utility.list_roles(include_user_info = True, using = "default")
+
+# create a role
+role_name = "test_role"
+role_1 = Role(role_name, using = "defalut") # this has a create method
+role_1.create()
+role_1.drop()
+
+# print out roles 
+print(utility.list_roles(include_user_info = True, using = "default"))
+
+
+####################### --- ASSIGN ROLE PRIVLAGES   --> ################### 
+########################################################################### 
+# see https://milvus.io/docs/users_and_roles.md#Users-and-Roles 
+# for object names and all possible privilages
+
+
+# grant is a method of the role object
+# we can give search privileges to all collections for our defined role
+role_1.grant("Collection", "*" "Search")
+
+# list privilages granted to a particular role
+role_1.list_grants()
+
+# we can also remove privaleges to a role
+role_1.revoke("Collection", "*" "Search")
+
+
+###################################################--- MAKE NEW USERS   --] 
+########################################################################### 
+# create a new user
+utility.create_user('golden_clover', '123456', using = "default")
+print(utility.list_usernames(using="default"))
+
+# delete a user
+utility.delete_user('golden_clover',  using = "default")
+
+# assigns a role to user
+role_1.add_user('golden_clover')
+
+
+# remove a user from a role
+role_1.remove_user('golden_clover')
+print(utility.list_usernames(using="default"))
+
+
+
+
+
+
+
+
+
+##################################################################################################################### 
+#######################################################################################################################
+##################################################### ATTU ########################################################## 
+##################################################################################################################### 
+##########################################################################################################################################
+# ATTU allows us to interact with Milvus via a web interface
+# everything we do with pymilvus can be down with attu
+# to set this up we need to open the docker compose file and add a new service
+# specifiyin the URL ports  etc
+# wget https://github.com/milvus-io/milvus/releases/download/v2.2.16/milvus-standalone-docker-compose.yml -O docker-compose.yml
+#
+############################################# docker-compose.YAML file ###############################################################
+# 39 Services:
+# 40 attu:
+# 41   container_name: attu
+# 42   image: zilliz/attu:v2.2.5
+# 43   environment: 
+# 44     MILVUS_URL: 127.0.0.1:19538
+# 45   ports
+# 46      -"8000:3000"
+# 47   depends_on:
+# 48      -"standlaone"
+#################################################################################################################################
+# restart the container
