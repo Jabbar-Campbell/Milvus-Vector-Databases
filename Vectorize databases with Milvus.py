@@ -64,9 +64,9 @@ song_vec = FieldSchema(
 
 # Now we can define a Collection Schema based
 # on the Field Schema and the collection a name
-# its like naming the table
+# its like assigning a table column  names
 collection_schema =  CollectionSchema (
-    fields = [song_name ,song_id,song_vec]
+    fields = [song_name ,song_id,song_vec],
     description = "Album Songs"
 )
 
@@ -106,8 +106,14 @@ data = [
     [''.join(random.choices(string.ascii_uppercase, k=7)) for _ in range(num_entities)],  # song name
     [i for i in range(num_entities)],  # song ID
     [random.randint(0, 10000) for _ in range(num_entities)],  # some random integer
-    [[random.random() for _ in range(2)] for _ in range(num_entities)]  # song_vec - 2d vector
+    [[random.random() for _ in range(2)] for _ in range(num_entities)]  # song_vec - 2d vector this an embedding!!!!
 ]
+
+
+# Insert a vector (e.g., 'xb') into the collection
+collection_name = 'my_collection'
+xb = [[0.1, 0.2]]  # Example vector... each corresponding to a field
+mr = milvus.insert(collection_name, xb)
 
 # we can remove entries based on collection schema
 expr = 'song_id in [0,20]'
@@ -209,8 +215,8 @@ from pymilvus import connections, utility, Collection
 connections.connect(
     alias = "default ",
     host = 'locahost',
-    port = '19538'
-      user = 'root'  # <---------
+    port = '19538',
+      user = 'root' , # <---------
       password= 'Milvus' # <-----
 )
 
