@@ -112,7 +112,7 @@ data = [
 
 # Insert a vector (e.g., 'xb') into the collection
 collection_name = 'my_collection'
-xb = [[0.1, 0.2]]  # Example vector... each corresponding to a field
+xb = [[0.1, 0.2, 0.3]]  # Example vector... each corresponding to a field
 mr = milvus.insert(collection_name, xb)
 
 # we can remove entries based on collection schema
