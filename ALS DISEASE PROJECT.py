@@ -50,9 +50,17 @@ connections.connect(host = '127.0.0.1',port = 19530)
 
 
 
-# lets get ourselves some images and the paths that lead to them
-# we wrote to target ALS but lets load some test image while we wait
-# 
+######################################################### LOCATE IMAGE PATHS  ########################################################D
+###########################################################################################################################################    
+import os
+
+Path = os.path.join(os.getcwd(), "ALS images")
+Files = os.listdir(path=Path)
+
+file_paths = []
+for i in Files:
+    x = os.path.join(os.getcwd(), i)
+    file_paths.append(x)
 
 
 
@@ -65,12 +73,7 @@ connections.connect(host = '127.0.0.1',port = 19530)
 
 
 
-
-
-
-# Get the filepaths of the images
-paths = glob.glob('animals/raw-img/*/*.j*', recursive=True)
-random.shuffle(paths)
+#random.shuffle(paths)
 
 
 # Load the embedding model from the tensorflow hub with the last layer removed
