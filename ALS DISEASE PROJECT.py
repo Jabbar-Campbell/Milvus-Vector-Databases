@@ -72,11 +72,11 @@ for i in Files:
 
 
 
-
 #random.shuffle(paths)
 
 
 # Load the embedding model from the tensorflow hub with the last layer removed
+import torch
 model = torch.hub.load('pytorch/vision:v0.10.0', 'inception_v3', pretrained=True)
 model.eval()
 
@@ -105,3 +105,8 @@ print(im.shape)
 emb = embed(im)
 print(len(emb))
 
+
+
+# This gives us a nice write up on the math under the hood 
+
+https://towardsdatascience.com/deep-dive-into-vector-databases-by-hand-e9ab71f54f80
