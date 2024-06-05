@@ -15,7 +15,7 @@
 # 4) feed a query and this doc into chain()
 ######################################################################################################################################################################
 
-
+# 
 #!pip3 install langchain openai tiktoken
 
 from langchain.embeddings.openai import OpenAIEmbeddings
@@ -26,6 +26,7 @@ from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.llms import OpenAI
 from os import environ
 from getpass import getpass
+
 
 
 

@@ -23,7 +23,7 @@
 # 8) Search our Milvus Database for similar images 
 # 9) Map file path and plot that image to verify
 ######################################################################################################################################################################
-
+ # 
 import torch
 import glob
 from torchvision import transforms
@@ -44,6 +44,7 @@ import random
 # Get the filepaths of the images
 paths = glob.glob('animals/raw-img/*/*.j*', recursive=True)
 random.shuffle(paths)
+
 
 
 # Load the embedding model from the tensorflow hub with the last layer removed
