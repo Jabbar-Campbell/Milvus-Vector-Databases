@@ -92,13 +92,14 @@ for i in Files:
 
 
 
-# Here we load an embedding model.  From the pytorch/vision repo a Convolutional Neural Network called resnet 18. This model
-# has been trained on many images (probably not pathology iamges). If you have a basic understanding of neural 
-# networks its no surprise that Convolutional Networks are best for image processing and that the weights
-# between nodes must be optimized using test images and gradient descent in a process call back propagation
-# setting the pretrained argumnet to true will make use of those weights. Inspecting the archithecture of this
-# network we can see the number of nodes in each layer. The algorithem used in back propogation, pooling layer
-# settings and more for an indepth review watch....
+# Here we load an embedding model from the pytorch/vision repo called "resnet18". This is a a Convolutional Neural Network  
+# that has been trained on many images (probably not pathology images). If you have a basic understanding of neural 
+# networks, its no surprise that Convolutional Networks are best for image processing tasks. You might also remember 
+# that the weights between nodes must be optimized using gradient descent on test images  in a process call back propagation.
+# Here we Set the pretrained argumnet to true to  make use of those weights. 
+
+# Inspecting the archithecture of this network we can see the number of nodes in each layer. The algorithem used in back propogation, pooling layer
+# settings and more. For an indepth review watch....
 # https://www.youtube.com/watch?v=nc7FzLiB_AY&t=103s
 
 # The first argument is the repo name, the second argument is the model name
@@ -124,9 +125,11 @@ preprocess = transforms.Compose([
 ])
 
 
-# lets test this out and inspect our first image
-# comparing them side by side. Transform expects an img so we'll need to convert
-#
+
+# Transform expects a certain format so we'll need to convert our *.png files to *.img files
+# lets test this out workflow and inspect our first image
+# comparing them side by side. 
+
 
 preprocess(file_paths[0])
 
