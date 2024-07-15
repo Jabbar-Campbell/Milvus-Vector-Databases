@@ -68,7 +68,7 @@ Files = os.listdir(path=Path)
 
 file_paths = []
 for i in Files:
-    x = os.path.join(os.getcwd(), i)
+    x = os.path.join(Path, i)
     file_paths.append(x)
 
 
@@ -126,12 +126,31 @@ preprocess = transforms.Compose([
 
 
 
-# Transform expects a certain format so we'll need to convert our *.png files to *.img files
-# lets test this out workflow and inspect our first image
-# comparing them side by side. 
+#  Intially our image looks like this, but lets test this out workflow and inspect our first image,
+# the Image module from the Pillow library opens jpegs
+from PIL import Image
+Image.open(file_paths[0])
+im = Image.open(file_paths[0])
+imp = preprocess(im)
 
 
-preprocess(file_paths[0])
+
+# since our preprocessing converts the image to a tensor we need to convert it back
+# to an array the Image module lets us do that
+
+import numpy as np
+import matplotlib.pyplot as plt
+# Assuming my_tensor is your tensor
+imp = np.array(im)
+imp= Image.fromarray(imp)
+plt.imshow(imp)
+plt.show()
+
+
+
+# whatever the transformations it didnt do much.....
+
+# lets  reexammine out cropping.....
 
 
 
