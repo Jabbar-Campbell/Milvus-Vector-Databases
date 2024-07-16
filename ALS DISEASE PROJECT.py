@@ -121,7 +121,7 @@ preprocess = transforms.Compose([
     transforms.Resize(299),
     transforms.CenterCrop(299),
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    #transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
 ])
 
 
@@ -129,7 +129,7 @@ preprocess = transforms.Compose([
 #  Intially our image looks like this, but lets test this out workflow and inspect our first image,
 # the Image module from the Pillow library opens jpegs
 from PIL import Image
-Image.open(file_paths[0])
+
 im = Image.open(file_paths[0])
 imp = preprocess(im)
 
@@ -143,19 +143,29 @@ imp = preprocess(im)
 import numpy as np
 import matplotlib.pyplot as plt
 
-imp = np.array(imp) 
+imp2 = np.array(imp) 
 np.array(imp).shape
-imp = np.moveaxis(np.array(imp), 0, -1)
-plt.imshow(imp)
+imp2 = np.moveaxis(np.array(imp), 0, -1)
+plt.imshow(imp2)
 plt.show()
-
+Image.open(file_paths[0])
 
 
 # We have succesfully cropped our image and can move on....
+# using out model we should be able to generate embeddings of our images
+# we feed tensors to out data
+# convert them to arrays
+# then flatten them to a single dimensions for milvus
+# these arrays will all be the same length thanks to our preprocessing steps!
+# a fuction allows us to do this work on each image in an object oriented way
 
 
 
 # Function to create embeddings from the model
+# .unsqueeze returns a new tensor with a dimension of size one inserted at the specified position
+
+
+# as a function
 def embed(data):
     with torch.no_grad():
         emb = np.array(model(data.unsqueeze(0)))
@@ -163,16 +173,89 @@ def embed(data):
 
 
 
-# Test the embedding generation 
-test = 'animals/raw-img/cane/OIP--2z_zAuTMzgYM_KynUl9CQHaE7.jpeg'
+
+# Test the embedding generation when we open each image and preprocess we can 
+# embed each of them
+test = file_paths[0]
 im = Image.open(test)
 im = preprocess(im)
 print(im.shape)
 emb = embed(im)
 print(len(emb))
 
-
+# a loop might look something like this....
+emb_list = []
+for i in range(len(file_paths)):
+    im = Image.open(file_paths[i])
+    im = preprocess(im)
+    emb = embed(im)
+    emb_list.append(emb)
 
 # This gives us a nice write up on the math under the hood 
-
 # https://towardsdatascience.com/deep-dive-into-vector-databases-by-hand-e9ab71f54f80
+
+
+
+
+######################################################### DEFINITIONS AND  COLLECTION SETUP ########################################################D
+###########################################################################################################################################      
+# with Field Schema we can intialize the columns of a table
+# and the kind of data that will be present
+
+from pymilvus import FieldSchema, DataType
+
+Image_name = FieldSchema(
+   name= "Image_Name",
+   dtype= DataType.VARCHAR,
+   max_length = 200,
+)
+
+Image_id = FieldSchema(
+   name= "Image_id",
+   dtype= DataType.INT64,
+   is_primary = True,
+)
+
+Image_date = FieldSchema(
+   name= "Image_Date",
+   dtype= DataType.VARCHAR,
+   dim = 8,
+)
+
+
+Image_vec = FieldSchema(
+   name= "Image_vector",
+   dtype= DataType.FLOAT.VECTOR,
+   dim = 1000,
+)
+
+
+
+
+
+# Now we can define the Collection as a group of Field Schemas  
+# on the Field Schema and the collection a name
+# its like assigning a table column  names
+collection_schema =  CollectionSchema (
+    fields = [Image_name ,Image_id,Image_date,Image_vec],
+    description = "ALS_IMAGES"
+)
+
+
+
+
+# Now we can now name the  collection 
+collection = Collection(
+    name = "Cohort1",
+    schema =  collection_schema,
+    using = 'default')
+
+
+
+#If we add more collections we can see and inspect  them with
+utility.list_collections()
+utility.drop_collection()
+
+
+# now we just have to get the data into the database
+
