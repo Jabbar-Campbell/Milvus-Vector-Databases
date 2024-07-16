@@ -136,21 +136,22 @@ imp = preprocess(im)
 
 
 # since our preprocessing converts the image to a tensor we need to convert it back
-# to an array the Image module lets us do that
+# to an array the Image module lets us do that. 
+# since we create an array that 3, 300, 300  we need to move the axis to 300 300 3
+# or length width depth RGB we do this with moveaxis
 
 import numpy as np
 import matplotlib.pyplot as plt
-# Assuming my_tensor is your tensor
-imp = np.array(im)
-imp= Image.fromarray(imp)
+
+imp = np.array(imp) 
+np.array(imp).shape
+imp = np.moveaxis(np.array(imp), 0, -1)
 plt.imshow(imp)
 plt.show()
 
 
 
-# whatever the transformations it didnt do much.....
-
-# lets  reexammine out cropping.....
+# We have succesfully cropped our image and can move on....
 
 
 
