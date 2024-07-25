@@ -204,28 +204,29 @@ for i in range(len(file_paths)):
 
 from pymilvus import FieldSchema, DataType
 
-Image_name = FieldSchema(
+image_name_field = FieldSchema(
    name= "Image_Name",
    dtype= DataType.VARCHAR,
    max_length = 200,
 )
 
-Image_id = FieldSchema(
-   name= "Image_id",
+image_id_field = FieldSchema(
+   name= "Image_Id",
    dtype= DataType.INT64,
    is_primary = True,
 )
 
-Image_date = FieldSchema(
+image_date_field = FieldSchema(
    name= "Image_Date",
    dtype= DataType.VARCHAR,
    dim = 8,
+   max_length=10
 )
 
 
-Image_vec = FieldSchema(
-   name= "Image_vector",
-   dtype= DataType.FLOAT.VECTOR,
+image_vector_field = FieldSchema(
+   name= "Image_Vector",
+   dtype= DataType.FLOAT_VECTOR,
    dim = 1000,
 )
 
@@ -236,16 +237,14 @@ Image_vec = FieldSchema(
 # Now we can define the Collection as a group of Field Schemas  
 # on the Field Schema and the collection a name
 # its like assigning a table column  names
-collection_schema =  CollectionSchema (
-    fields = [Image_name ,Image_id,Image_date,Image_vec],
-    description = "ALS_IMAGES"
-)
+collection_schema = CollectionSchema(fields=[image_name_field, image_id_field, image_date_field, image_vector_field], description="ALS_IMAGES")
 
 
 
 
-# Now we can now name the  collection 
-collection = Collection(
+# Now we can create an instance of the above schema
+# calling in collection 1
+collection_1 = Collection(
     name = "Cohort1",
     schema =  collection_schema,
     using = 'default')
@@ -253,9 +252,48 @@ collection = Collection(
 
 
 #If we add more collections we can see and inspect  them with
+utility.has_collection()
 utility.list_collections()
 utility.drop_collection()
 
+# we could check if a collection exist and add based on some logic
+# adding in some print statements to check the status
+try:
+    if utility.has_collection("Cohort_2"):
+        print(f"Collection '{"Cohort_2"}' already exists.")
+    else:
+        # Create collection
+        collection = Collection(name="Cohort_1", schema=collection_schema, using='default')
+        print(f"Collection '{"Cohort_2"}' created successfully.")
+except Exception as e:
+    print(f"Failed to create collection: {e}")
 
-# now we just have to get the data into the database
 
+# now we just have to get the data into our database collection
+# Packages like Pytorch which make use of tensors the data is entered in a 
+# rowise fashion
+# In Milvus our vectors of data will be columnwise. 
+# A list of names will be our "Image_name" Column, A sequence of numbers can be our
+# "Image_Id", and a list of embeddings will be our "Image_vector" 
+# Fortunaltely milvus.insert makes this task simple to add 
+# 6 names, 6 ids, 6 dates, and 6 2d vectors
+
+
+import random
+import string
+
+
+
+
+collection_1.insert(data = [
+    Files,                      # 6 names
+    [1, 2, 3, 4, 5, 6],         # 6 ids
+    ['20240714'] * 6,           # 6 dates as strings
+    emb_list                    # 6 2D vectors
+])
+
+
+
+
+# we can remove entries based on collection schema
+collection_1.delete()
