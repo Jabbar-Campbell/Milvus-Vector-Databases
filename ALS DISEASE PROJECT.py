@@ -292,8 +292,43 @@ collection_1.insert(data = [
     emb_list                    # 6 2D vectors
 ])
 
-
-
-
 # we can remove entries based on collection schema
 collection_1.delete()
+
+
+
+
+
+# Since the vectors are long and there can be many of them
+# we can use various methods in Index our vectors to make
+# similarity searches easier and more efficient.
+# after all comparing every postion at every dimension is computationalll exhausting 
+# first we create an dicitonary of index parameters based on on arguements
+# the create.index function will expect
+# we then use these parameters on our Vector embedding column
+
+######################################################## INDEXING #####################################################################D
+##########################################################################################################################################
+
+# Prepare the index parameters as follows:
+# see also https://milvus.io/docs/v2.3.x/build_index.md
+# for all the parameter types and definitions for
+# example L2 is for euclidean distance but there are others
+# once indexed a single value x becomes the vector [x1,...,xn]
+# for every value in that column
+# Here we use "L2" and "IVF_FLAT" but  see https://milvus.io/docs/v2.0.x/index.md for possible index types
+index_params = {
+  "metric_type":"L2",        # Euclidean distance
+  "index_type":"IVF_FLAT",   # Quantization-based index for high accuracy
+  "params":{"nlist":1024}    # Number of cluster units
+}
+
+ 
+ 
+ 
+collection_1.create_index(
+  field_name="Image_Vector", 
+  index_params=index_params
+)
+
+
