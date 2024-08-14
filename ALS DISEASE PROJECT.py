@@ -58,12 +58,12 @@ connections.connect(host = '127.0.0.1',port = 19530)
 
 
 # We'll also need some images and the path to them. OS is a great package for making path variables
-
+# create a path to where they are C:\~\~\~\~\~\Milvus\ALS images
 ######################################################### LOCATE IMAGE PATHS  ########################################################D
 ###########################################################################################################################################    
 import os
 
-Path = os.path.join(os.getcwd(), "ALS images")
+Path = os.path.join(os.getcwd(), "OneDrive\Desktop\Sandbox\Milvus", "ALS images")
 Files = os.listdir(path=Path)
 
 file_paths = []
@@ -175,7 +175,8 @@ def embed(data):
 
 
 # Test the embedding generation when we open each image and preprocess we can 
-# embed each of them
+# embed each of them, we'll need to note the length for
+# when we set up our collection. The vector column will accept vectors of this length
 test = file_paths[0]
 im = Image.open(test)
 im = preprocess(im)
@@ -298,6 +299,8 @@ collection_1.delete()
 
 
 
+######################################################## INDEXING #####################################################################D
+##########################################################################################################################################
 
 # Since the vectors are long and there can be many of them
 # we can use various methods in Index our vectors to make
@@ -306,8 +309,6 @@ collection_1.delete()
 # first we create an dicitonary of index parameters based on on arguements
 # the create.index function will expect
 # we then use these parameters on our Vector embedding column
-
-######################################################## INDEXING #####################################################################D
 ##########################################################################################################################################
 
 # Prepare the index parameters as follows:
@@ -320,7 +321,7 @@ collection_1.delete()
 index_params = {
   "metric_type":"L2",        # Euclidean distance
   "index_type":"IVF_FLAT",   # Quantization-based index for high accuracy
-  "params":{"nlist":1024}    # Number of cluster units
+  "params":{"nlist":3}    # Number of cluster units
 }
 
  
@@ -332,3 +333,38 @@ collection_1.create_index(
 )
 
 
+
+
+
+
+######################################################### SEARCHING AND QUERY #############################################################
+##########################################################################################################################################
+
+# before we can search we must first connect to milvus and load the 
+# collections. we can also remove collections from memory using the release .method()
+collection_1.load(replica_number =1)
+collection_1.release()
+
+# 
+
+# the magic happens here we have input data in vector form. 
+# This search will use the field "image_vector_field"
+# to look for similarity based on indexing parameters in the param 
+# and then look up the Image_Name that corresponds
+# the query can be an image vectorized in the same way or something already in the data base
+
+my_query_vec1 = embed()
+# or 
+my_query_vec2 = emb_list[1]
+
+results = collection_1.search(
+    data = [emb_list[1]],
+    anns_field = "Image_Vector",
+    param = { "metric_type": "L2", "params": {"nprobe": 10} },
+    limit = 5,
+    expr = None,
+    output_fields=['Image_Name', 'Image_Date']
+)
+
+for result in results[0]:
+    print (result)
